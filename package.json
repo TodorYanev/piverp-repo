@@ -1,7 +1,7 @@
 {
   "name": "piverp-repo",
   "version": "1.0.0",
-  "description": "",
+  "description": "Hello World",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/TodorYanev/piverp-repo#readme",
   "dependencies": {
-    "pg": "^7.7.1"
+    "pg": "^7.7.1",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "react-native": "^0.57.8"
   }
 }

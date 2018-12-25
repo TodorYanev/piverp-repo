@@ -1,101 +1,158 @@
-var querystring = require('querystring')
-var stream = require('stream')
-var http = require('http')
-var path = require('path')
-var url = require('url')
-var fs = require('fs')
+function bug(o) {
+    console.log(util.format('Bug: %s', o))
+}
+
+function warning(o)
+{
+    console.log(util.format('Warning: %s', o))
+}
+
+var AccountAccess = false
+
+var Paths = {
+    data: __dirname + '/nano.json',
+    icon: __dirname + '/favicon.ico',
+    login: __dirname + '/views/login.html',
+    view404: __dirname + '/views/404.html',
+    asd: __dirname + '/views/asd.html',
+    index: __dirname + '/views/index.html',
+    js: __dirname + '/views/like_button.js',
+
+    sitestyle: __dirname + '/style/sitestyle.css',
+    sitereact: __dirname + '/react/sitereact.js',
+
+    Fonts: {
+
+        BirdCherryLite: __dirname + '/fonts/Bird-cherry-lite.ttf'
+
+    },
+
+    Components: {
+        
+        HomeButton: __dirname + '/components/HomeButton.html'
+
+    }
+}
+
+var body = ''
+
+const querystring = require('querystring')
+const util = require('util');
+const crypto = require('crypto')
+const stream = require('stream')
+const http = require('http')
+const path = require('path')
+const url = require('url')
+const fs = require('fs')
+
+function encrypt(text){
+    var cipher = crypto.createCipher('aes-256-cbc','d6F3Efeq')
+    var crypted = cipher.update(text,'utf8','hex')
+    crypted += cipher.final('hex');
+    return crypted;
+}
+
+function decrypt(text){
+var decipher = crypto.createDecipher('aes-256-cbc','d6F3Efeq')
+var dec = decipher.update(text,'hex','utf8')
+dec += decipher.final('utf8');
+return dec;
+}
 
 http.createServer(function(request, response) {
 
-    if (url.parse(request.url).path == '/') {
+    const siteUrl = url.parse(request.url)
 
-        Index()
-    }
+    request.on('close', () => {
 
-    if (url.parse(request.url).path == '/style.css') {
+        bug('Request is being closed!')
+    })
 
-        Style()
-    }
+    request.on('error', (err) => {
 
-    if (url.parse(request.url).path == '/development.css') {
+        bug('Request is being not-well!')
+    })
 
-        StyleDebug()
-    }
+    request.on('data', (chunk) => {
+        body += chunk
 
-    
+        bug('Request is being chunked!')
+    });
 
-    if (url.parse(request.url).path == '/hen.png') {
+    request.on('end', () => {
 
-        Image()
-    }
-
-
-    console.log(request.url)
-
-    
-
-    function Index() {
         
-        fs.readFile(__dirname + '/views/index.html', (err, data) => {
 
-            if (err) {
-                console.log('error')
-            } else {
-                response.writeHead(200, null, {'Content-type' : 'text/html'})
-                response.write(data)
-                response.end(() => {
+        bug('Request is being ended! At: ' + siteUrl.path + '   With: ' + request.method + '    And: ' + '[[' + body + ']]')
+        
+    })
 
-                })
-            }
-        })
-    }
+    response.on('close', () => {
 
-    function Style() {
+        bug('Response is being closed!')
+    })
 
-        fs.readFile(__dirname + '/style/index.css', (err, data) => {
+    response.on('drain', () => {
 
-            if (err) {
-                console.log('error')
-            } else {
-                response.writeHead(200, null, {'Content-type' : 'text/css'})
-                response.write(data)
-                response.end(() => {
+        bug('Response is being drained!')
+    })
 
-                })
-            }
-        })
-    }
+    response.on('error', () => {
 
-    function StyleDebug() {
+        bug('Response is being not-well!')
+    })
 
-        fs.readFile(__dirname + '/style/development.css', (err, data) => {
+    response.on('finish', () => {
+        
+        response.end()
 
-            if (err) {
-                console.log('error')
-            } else {
-                response.writeHead(200, null, {'Content-type' : 'text/css'})
-                response.write(data)
-                response.end(() => {
+        bug('Response is being finished!')
+    })
 
-                })
-            }
-        })
-    }
+    response.on('pipe', (src) => {
 
-    function Image() {
+        bug('Response is being piped!')
+    })
 
-        fs.readFile(__dirname + '/hen.png', (err, data) => {
+    response.on('unpipe', (src) => {
 
-            if (err) {
-                console.log('error')
-            } else {
-                response.writeHead(200, null, {'Content-type' : 'image/png'})
-                response.write(data)
-                response.end(() => {
+        body = ''
 
-                })
-            }
-        })
+        bug('Response is being unpiped!')
+    })
+
+    if (siteUrl.path == '/favicon.ico') {
+
+        fs.createReadStream(Paths.icon, null).pipe(response)
+
+    } else if (siteUrl.path == '/sitereact') {
+
+        fs.createReadStream(Paths.sitereact, null).pipe(response)
+
+    } else if (siteUrl.path == '/sitestyle') {
+        
+        fs.createReadStream(Paths.sitestyle, null).pipe(response)
+
+    } else if (siteUrl.path == '/login') {
+
+        fs.createReadStream(Paths.login, null).pipe(response)
+        
+    } else if (siteUrl.path == '/index') {
+
+        fs.createReadStream(Paths.index, null).pipe(response)
+
+    } else if (siteUrl.path == '/component/homebutton') {
+
+        fs.createReadStream(Paths.Components.HomeButton, null).pipe(response)
+
+    } else if (siteUrl.path == '/BirdCherryLite') {
+        
+        fs.createReadStream(Paths.Fonts.BirdCherryLite, null).pipe(response)
+
+    } else {
+
+        
+        //fs.createReadStream(Paths.view404, null).pipe(response)
     }
 
 })
